@@ -1,0 +1,1355 @@
+{
+	"info": {
+		"_postman_id": "90d6538d-df01-42f7-b768-329ff33e9f64",
+		"name": "Booking",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "18941177"
+	},
+	"item": [
+		{
+			"name": "Get Booking Tests",
+			"item": [
+				{
+					"name": "Validate all IDs and create variables",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const responseJSON = pm.response.json();\r",
+									"\r",
+									"// return id of first booking else return null\r",
+									"function getPositiveID(){\r",
+									"    if (pm.response.to.be.not.null){\r",
+									"        return responseJSON[0].bookingid;\r",
+									"    }\r",
+									"    else\r",
+									"        return null;\r",
+									"}\r",
+									"\r",
+									"// return id of non-existent booking\r",
+									"function getNegativeID() {\r",
+									"    let sampleNegativeID;\r",
+									"    do {\r",
+									"        sampleNegativeID = Math.floor(Math.random() * 1001);\r",
+									"      \r",
+									"    } while (responseJSON.some(object => object.bookingid === sampleNegativeID));\r",
+									"    \r",
+									"    return sampleNegativeID;\r",
+									"}\r",
+									"\r",
+									"pm.test(\"Verify status 200\", () => {\r",
+									"    pm.response.to.have.status(200, \r",
+									"        \"Expected response to have status 200, but got \" + pm.response.code);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verify validate all bookingId in response body\", () => {\r",
+									"    responseJSON.forEach(bookingID => {\r",
+									"        pm.expect(bookingID.bookingid).to.be.a(\"number\").and.not.null;\r",
+									"    });\r",
+									"});\r",
+									"\r",
+									"pm.collectionVariables.set(\"positiveID\", getPositiveID());\r",
+									"pm.collectionVariables.set(\"negativeID\", getNegativeID());"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/booking",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"booking"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Positive Get Booking",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const responseJSON = pm.response.json();",
+									"",
+									"// verify type of record and is it not null ",
+									"function verifyField(field, expectedType) {",
+									"    pm.test(`Verify if ${field} is ${expectedType}`, () => {",
+									"        pm.expect(responseJSON[field]).to.be.a(expectedType).and.not.null;",
+									"    });",
+									"}",
+									"",
+									"// verify correct date format",
+									"function isValidDateFormat(date) {",
+									"    const regex = /^\\d{4}-\\d{2}-\\d{2}$/;",
+									"    return regex.test(date);",
+									"}",
+									"",
+									"pm.test(\"Verify status 200\", () => {",
+									"    pm.response.to.have.status(200, ",
+									"        \"Expected response to have status 200, but got \" + pm.response.code);",
+									"});",
+									"",
+									"verifyField(\"firstname\", \"string\");",
+									"verifyField(\"lastname\", \"string\");",
+									"verifyField(\"totalprice\", \"number\");",
+									"verifyField(\"depositpaid\", \"boolean\");",
+									"",
+									"pm.test(\"Verify checkin date format\", () => {",
+									"    pm.expect(isValidDateFormat(responseJSON.bookingdates.checkin)).to.be.true;",
+									"});",
+									"",
+									"pm.test(\"Verify checkout date format\", () => {",
+									"    pm.expect(isValidDateFormat(responseJSON.bookingdates.checkout)).to.be.true;",
+									"});",
+									"",
+									"verifyField(\"additionalneeds\", \"string\");",
+									"",
+									"pm.test(\"Verify respond time < 500 ms\", () => {",
+									"    pm.expect(pm.response.responseTime).to.be.below(500);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/booking/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"booking",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{positiveID}}",
+									"description": "gets from Get Booking ID"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Negative Get Booking",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Vefiry if negative ID doesn't exist\", () => {\r",
+									"    pm.response.to.have.status(404, \r",
+									"        \"Expected response to have status 404 but got \" + pm.response.code);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/booking/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"booking",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{negativeID}}",
+									"description": "gets from Get Booking ID"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Create Booking Tests",
+			"item": [
+				{
+					"name": "Positive Create Booking",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const responseJSON = pm.response.json();\r",
+									"\r",
+									"// verify value with expected value \r",
+									"function verifyBookingValue(field, expectedValue) {\r",
+									"    pm.test(`Verify if ${field} is ${expectedValue}`, () => {\r",
+									"        pm.expect(responseJSON.booking[field]).to.equal(pm.variables.get(expectedValue));\r",
+									"\r",
+									"    });\r",
+									"}\r",
+									"// verify date with wxpected date\r",
+									"function verifyBookingdateValue(field, expectedValue) {\r",
+									"    pm.test(`Verify if ${field} is ${expectedValue}`, () => {\r",
+									"        pm.expect(responseJSON.booking.bookingdates[field]).to.equal(pm.variables.get(expectedValue));\r",
+									"\r",
+									"    });\r",
+									"}\r",
+									"\r",
+									"// verify deposit paid\r",
+									"function verifyDepositpaid(expectedValue) {\r",
+									"    if (pm.collectionVariables.get(expectedValue) == 'true') {\r",
+									"        pm.test(\"Verify is paid\", () => {\r",
+									"            pm.expect(responseJSON.booking.depositpaid).to.be.true;\r",
+									"        });\r",
+									"    } else {\r",
+									"        pm.test(\"Verify is paid\", () => {\r",
+									"            pm.expect(responseJSON.booking.depositpaid).to.be.false;\r",
+									"        });\r",
+									"    }\r",
+									"}\r",
+									"\r",
+									"pm.test(\"Verify status 200\", () => {\r",
+									"    pm.response.to.have.status(200, \r",
+									"        \"Expected response to have status 200, but got \" + pm.response.code);\r",
+									"});\r",
+									"\r",
+									"verifyBookingValue(\"firstname\", \"firstNamePositive\");\r",
+									"verifyBookingValue(\"lastname\", \"lastNamePositive\");\r",
+									"\r",
+									"pm.test(\"Verify total price\", () => {\r",
+									"    pm.expect(responseJSON.booking.totalprice).to.equal(parseInt(pm.variables.get(\"totalPricePositive\")));\r",
+									"});\r",
+									"\r",
+									"verifyDepositpaid(\"depositPaidPositive\");\r",
+									"\r",
+									"verifyBookingdateValue(\"checkin\", \"bookingDatesCheckInPositive\");\r",
+									"verifyBookingdateValue(\"checkout\", \"bookingDatesCheckOutPositive\");\r",
+									"\r",
+									"verifyBookingValue(\"additionalneeds\", \"additionalNeedsPositive\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.set(\"firstNamePositive\", pm.variables.replaceIn('{{$randomFirstName}}'));\r",
+									"pm.collectionVariables.set(\"lastNamePositive\", pm.variables.replaceIn('{{$randomLastName}}'));\r",
+									"pm.collectionVariables.set(\"totalPricePositive\", pm.variables.replaceIn('{{$randomInt}}'));\r",
+									"pm.collectionVariables.set(\"depositPaidPositive\", pm.variables.replaceIn('{{$randomBoolean}}'));\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"pm.collectionVariables.set(\"bookingDatesCheckInPositive\", moment().format(\"YYYY-MM-DD\"));\r",
+									"pm.collectionVariables.set(\"bookingDatesCheckOutPositive\", moment().add(3, 'days').format(\"YYYY-MM-DD\"));\r",
+									"\r",
+									"pm.collectionVariables.set(\"additionalNeedsPositive\", pm.variables.replaceIn('{{$randomPhrase}}'));\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstname\" : \"{{firstNamePositive}}\",\r\n    \"lastname\" : \"{{lastNamePositive}}\",\r\n    \"totalprice\" : {{totalPricePositive}},\r\n    \"depositpaid\" : {{depositPaidPositive}},\r\n    \"bookingdates\" : {\r\n        \"checkin\" : \"{{bookingDatesCheckInPositive}}\",\r\n        \"checkout\" : \"{{bookingDatesCheckOutPositive}}\"\r\n    },\r\n    \"additionalneeds\" : \"{{additionalNeedsPositive}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/booking",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"booking"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Negative Create Booking",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.set(\"firstNameNegative\", pm.variables.replaceIn('{{$randomInt}}'));\r",
+									"pm.collectionVariables.set(\"lastNameNegative\", pm.variables.replaceIn('{{$randomInt}}'));\r",
+									"pm.collectionVariables.set(\"totalPriceNegative\", pm.variables.replaceIn('{{$randomFirstName}}'));\r",
+									"pm.collectionVariables.set(\"depositPaidNegative\", pm.variables.replaceIn('{{$randomLastName}}'));\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"pm.collectionVariables.set(\"bookingDatesCheckInNegative\", moment().format(\"DD-MM-YYYY\"));\r",
+									"pm.collectionVariables.set(\"bookingDatesCheckOutNegative\", moment().add(3, 'days').format(\"DD-MM-YYYY\"));\r",
+									"\r",
+									"pm.collectionVariables.set(\"additionalNeedsNegative\", pm.variables.replaceIn('{{$randomBoolean}}'));\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Verify status 400\", () => {\r",
+									"    pm.response.to.have.status(400, \r",
+									"        \"Expected response to have status 400, but got \" + pm.response.code);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstname\" : \"{{firstNameNegative}}\",\r\n    \"lastname\" : \"{{lastNameNegative}}\",\r\n    \"totalprice\" : {{totalPriceNegative}},\r\n    \"depositpaid\" : {{depositPaidNegative}},\r\n    \"bookingdates\" : {\r\n        \"checkin\" : \"{{bookingDatesCheckInNegative}}\",\r\n        \"checkout\" : \"{{bookingDatesCheckOutNegative}}\"\r\n    },\r\n    \"additionalneeds\" : \"{{additionalNeedsNegative}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/booking",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"booking"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Update Booking Tests",
+			"item": [
+				{
+					"name": "Create Token",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Verify status 200\", () => {\r",
+									"    pm.response.to.have.status(200, \r",
+									"        \"Expected response to have status 200, but got \" + pm.response.code);\r",
+									"});\r",
+									"pm.environment.set(\"cookieToken\", pm.response.json().token);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\" : \"{{login}}\",\r\n    \"password\" : \"{{password}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://restful-booker.herokuapp.com/auth",
+							"protocol": "https",
+							"host": [
+								"restful-booker",
+								"herokuapp",
+								"com"
+							],
+							"path": [
+								"auth"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Positive Update Booking",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.set(\"updatedFirstnamePositive\", pm.variables.replaceIn('{{$randomFirstName}}'));\r",
+									"pm.collectionVariables.set(\"updatedLastnamePositive\", pm.variables.replaceIn('{{$randomLastName}}'));\r",
+									"pm.collectionVariables.set(\"updatedTotalpricePositive\", pm.variables.replaceIn('{{$randomInt}}'));\r",
+									"pm.collectionVariables.set(\"updatedDepositpaidPositive\", pm.variables.replaceIn('{{$randomBoolean}}'));\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"pm.collectionVariables.set(\"updatedCheckinPositive\", pm.variables.replaceIn(moment().format(\"YYYY-MM-DD\")));\r",
+									"pm.collectionVariables.set(\"updatedCheckoutPositive\", pm.variables.replaceIn(moment().add(1, 'days').format(\"YYYY-MM-DD\")));\r",
+									"\r",
+									"pm.collectionVariables.set(\"updatedAdditionalneedsPositive\", pm.variables.replaceIn('{{$randomPhrase}}'));"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const responseJSON = pm.response.json();\r",
+									"\r",
+									"// verify value with expected value \r",
+									"function verifyBookingValue(field, expectedValue) {\r",
+									"    pm.test(`Verify if ${field} is ${expectedValue}`, () => {\r",
+									"        pm.expect(responseJSON[field]).to.equal(pm.variables.get(expectedValue));\r",
+									"\r",
+									"    });\r",
+									"}\r",
+									"// verify date with wxpected date\r",
+									"function verifyBookingdateValue(field, expectedValue) {\r",
+									"    pm.test(`Verify if ${field} is ${expectedValue}`, () => {\r",
+									"        pm.expect(responseJSON.bookingdates[field]).to.equal(pm.variables.get(expectedValue));\r",
+									"\r",
+									"    });\r",
+									"}\r",
+									"\r",
+									"// verify deposit paid\r",
+									"function verifyDepositpaid(expectedValue) {\r",
+									"    if (pm.collectionVariables.get(expectedValue) == 'true') {\r",
+									"        pm.test(\"Verify is paid\", () => {\r",
+									"            pm.expect(responseJSON.depositpaid).to.be.true;\r",
+									"        });\r",
+									"    } else {\r",
+									"        pm.test(\"Verify is paid\", () => {\r",
+									"            pm.expect(responseJSON.depositpaid).to.be.false;\r",
+									"        });\r",
+									"    }\r",
+									"}\r",
+									"\r",
+									"pm.test(\"Verify status 200\", () => {\r",
+									"    pm.response.to.have.status(200, \r",
+									"        \"Expected response to have status 200, but got \" + pm.response.code);\r",
+									"});\r",
+									"\r",
+									"verifyBookingValue(\"firstname\", \"updatedFirstnamePositive\");\r",
+									"verifyBookingValue(\"lastname\", \"updatedLastnamePositive\");\r",
+									"\r",
+									"pm.test(\"Verify total price\", () => {\r",
+									"    pm.expect(responseJSON.totalprice).to.equal(parseInt(pm.collectionVariables.get(\"updatedTotalpricePositive\")));\r",
+									"});\r",
+									"\r",
+									"verifyDepositpaid(\"updatedDepositpaidPositive\");\r",
+									"\r",
+									"verifyBookingdateValue(\"checkin\", \"updatedCheckinPositive\");\r",
+									"verifyBookingdateValue(\"checkout\", \"updatedCheckoutPositive\");\r",
+									"\r",
+									"verifyBookingValue(\"additionalneeds\", \"updatedAdditionalneedsPositive\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "token={{cookieToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstname\" : \"{{updatedFirstnamePositive}}\",\r\n    \"lastname\" : \"{{updatedLastnamePositive}}\",\r\n    \"totalprice\" : {{updatedTotalpricePositive}},\r\n    \"depositpaid\" : {{updatedDepositpaidPositive}},\r\n    \"bookingdates\" : {\r\n        \"checkin\" : \"{{updatedCheckinPositive}}\",\r\n        \"checkout\" : \"{{updatedCheckoutPositive}}\"\r\n    },\r\n    \"additionalneeds\" : \"{{updatedAdditionalneedsPositive}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/booking/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"booking",
+								":id"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{positiveID}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Negative (no token) Update Booking",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.set(\"updatedFirstname\", pm.variables.replaceIn('{{$randomFirstName}}'));\r",
+									"pm.collectionVariables.set(\"updatedLastname\", pm.variables.replaceIn('{{$randomLastName}}'));\r",
+									"pm.collectionVariables.set(\"updatedTotalprice\", pm.variables.replaceIn('{{$randomInt}}'));\r",
+									"pm.collectionVariables.set(\"updatedDepositpaid\", pm.variables.replaceIn('{{$randomBoolean}}'));\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"pm.collectionVariables.set(\"updatedCheckin\", pm.variables.replaceIn(moment().format(\"YYYY-MM-DD\")));\r",
+									"pm.collectionVariables.set(\"updatedCheckout\", pm.variables.replaceIn(moment().add(1, 'days').format(\"YYYY-MM-DD\")));\r",
+									"\r",
+									"pm.collectionVariables.set(\"updatedAdditionalneeds\", pm.variables.replaceIn('{{$randomPhrase}}'));"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Verify status 403\", () => {\r",
+									"    pm.response.to.have.status(403, \r",
+									"        \"Expected response to have status 403, but got \" + pm.response.code);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstname\" : \"{{updatedFirstname}}\",\r\n    \"lastname\" : \"{{updatedLastname}}\",\r\n    \"totalprice\" : {{updatedTotalprice}},\r\n    \"depositpaid\" : {{updatedDepositpaid}},\r\n    \"bookingdates\" : {\r\n        \"checkin\" : \"{{updatedCheckin}}\",\r\n        \"checkout\" : \"{{updatedCheckout}}\"\r\n    },\r\n    \"additionalneeds\" : \"{{updatedAdditionalneeds}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/booking/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"booking",
+								":id"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{positiveID}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Negative (incorrect token) Update Booking Copy",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.set(\"updatedFirstname\", pm.variables.replaceIn('{{$randomFirstName}}'));\r",
+									"pm.collectionVariables.set(\"updatedLastname\", pm.variables.replaceIn('{{$randomLastName}}'));\r",
+									"pm.collectionVariables.set(\"updatedTotalprice\", pm.variables.replaceIn('{{$randomInt}}'));\r",
+									"pm.collectionVariables.set(\"updatedDepositpaid\", pm.variables.replaceIn('{{$randomBoolean}}'));\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"pm.collectionVariables.set(\"updatedCheckin\", pm.variables.replaceIn(moment().format(\"YYYY-MM-DD\")));\r",
+									"pm.collectionVariables.set(\"updatedCheckout\", pm.variables.replaceIn(moment().add(1, 'days').format(\"YYYY-MM-DD\")));\r",
+									"\r",
+									"pm.collectionVariables.set(\"updatedAdditionalneeds\", pm.variables.replaceIn('{{$randomPhrase}}'));"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Verify status 403\", () => {\r",
+									"    pm.response.to.have.status(403, \r",
+									"        \"Expected response to have status 403, but got \" + pm.response.code);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Cookie",
+								"value": "{{$randomInt}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstname\" : \"{{updatedFirstname}}\",\r\n    \"lastname\" : \"{{updatedLastname}}\",\r\n    \"totalprice\" : {{updatedTotalprice}},\r\n    \"depositpaid\" : {{updatedDepositpaid}},\r\n    \"bookingdates\" : {\r\n        \"checkin\" : \"{{updatedCheckin}}\",\r\n        \"checkout\" : \"{{updatedCheckout}}\"\r\n    },\r\n    \"additionalneeds\" : \"{{updatedAdditionalneeds}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/booking/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"booking",
+								":id"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{positiveID}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Negative Updating Booking",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.set(\"updatedFirstnameNegative\", pm.variables.replaceIn('{{$randomInt}}'));\r",
+									"pm.collectionVariables.set(\"updatedLastnameNegative\", pm.variables.replaceIn('{{$randomInt}}'));\r",
+									"pm.collectionVariables.set(\"updatedTotalpriceNegative\", pm.variables.replaceIn('{{$randomFirstName}}'));\r",
+									"pm.collectionVariables.set(\"updatedDepositpaidNegative\", pm.variables.replaceIn('{{$randomLastName}}'));\r",
+									"\r",
+									"const moment = require('moment');\r",
+									"pm.collectionVariables.set(\"updatedCheckinNegative\", pm.variables.replaceIn(moment().format(\"DD-MM-YYYY\")));\r",
+									"pm.collectionVariables.set(\"updatedCheckoutNegative\", pm.variables.replaceIn(moment().add(1, 'days').format(\"DD-MM-YYYY\")));\r",
+									"\r",
+									"pm.collectionVariables.set(\"updatedAdditionalneedsNegative\", pm.variables.replaceIn('{{$randomBoolean}}'));"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Verify status 400\", () => {\r",
+									"    pm.response.to.have.status(400, \r",
+									"        \"Expected response to have status 400, but got \" + pm.response.code);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Cookie",
+								"value": "token ={{cookieToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstname\" : \"{{updatedFirstnameNegative}}\",\r\n    \"lastname\" : \"{{updatedLastnameNegative}}\",\r\n    \"totalprice\" : {{updatedTotalpriceNegative}},\r\n    \"depositpaid\" : {{updatedDepositpaidNegative}},\r\n    \"bookingdates\" : {\r\n        \"checkin\" : \"{{updatedCheckinNegative}}\",\r\n        \"checkout\" : \"{{updatedCheckoutNegative}}\"\r\n    },\r\n    \"additionalneeds\" : \"{{updatedAdditionalneedsNegative}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/booking/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"booking",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Delete Booking Tests",
+			"item": [
+				{
+					"name": "Negative (no token) Delete Booking",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"\r",
+									"pm.test(\"Verify status 404\", () => {\r",
+									"    pm.response.to.have.status(404, \r",
+									"        \"Expected response to have status 404, but got \" + pm.response.code);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"content-type": true
+						}
+					},
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/booking/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"booking",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{verifyCreatedBooking}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Negative (incorrect token) Delete Booking",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"\r",
+									"pm.test(\"Verify status 404\", () => {\r",
+									"    pm.response.to.have.status(404, \r",
+									"        \"Expected response to have status 404, but got \" + pm.response.code);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"content-type": true
+						}
+					},
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "token={{$randomInt}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/booking/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"booking",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{verifyCreatedBooking}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Negative Delete Booking",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"\r",
+									"pm.test(\"Verify status 405\", () => {\r",
+									"    pm.response.to.have.status(405, \r",
+									"        \"Expected response to have status 405, but got \" + pm.response.code);\r",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"content-type": true
+						}
+					},
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "token={{cookieToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/booking/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"booking",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{negativeID}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Positive Delete Booking",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"\r",
+									"pm.test(\"Verify status 201\", () => {\r",
+									"    pm.response.to.have.status(201, \r",
+									"        \"Expected response to have status 201, but got \" + pm.response.code);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"content-type": true
+						}
+					},
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "token={{cookieToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/booking/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"booking",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{positiveID}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "negativeID",
+			"value": "0"
+		},
+		{
+			"key": "positiveID",
+			"value": "0"
+		},
+		{
+			"key": "firstName",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "lastName",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "totalPrice",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "depositPaid",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "bookingDatesCheckIn",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "bookingDatesCheckOut",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "additionalNeeds",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "verifyCreatedBooking",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "updatedFirstname",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "updatedLastname",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "updatedTotalprice",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "updatedCheckin",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "updatedCheckout",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "updatedAdditionalneeds",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "updatedDepositpaid",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "firstNameNegative",
+			"value": ""
+		},
+		{
+			"key": "lastNameNegative",
+			"value": ""
+		},
+		{
+			"key": "totalPriceNegative",
+			"value": ""
+		},
+		{
+			"key": "depositPaidNegative",
+			"value": ""
+		},
+		{
+			"key": "bookingDatesCheckInNegative",
+			"value": ""
+		},
+		{
+			"key": "bookingDatesCheckOutNegative",
+			"value": ""
+		},
+		{
+			"key": "additionalNeedsNegative",
+			"value": ""
+		},
+		{
+			"key": "firstNamePositive",
+			"value": ""
+		},
+		{
+			"key": "lastNamePositive",
+			"value": ""
+		},
+		{
+			"key": "totalPricePositive",
+			"value": ""
+		},
+		{
+			"key": "depositPaidPositive",
+			"value": ""
+		},
+		{
+			"key": "bookingDatesCheckInPositive",
+			"value": ""
+		},
+		{
+			"key": "bookingDatesCheckOutPositive",
+			"value": ""
+		},
+		{
+			"key": "additionalNeedsPositive",
+			"value": ""
+		},
+		{
+			"key": "cookieToken",
+			"value": ""
+		},
+		{
+			"key": "updatedFirstnameNegative",
+			"value": ""
+		},
+		{
+			"key": "updatedLastnameNegative",
+			"value": ""
+		},
+		{
+			"key": "updatedTotalpriceNegative",
+			"value": ""
+		},
+		{
+			"key": "updatedDepositpaidNegative",
+			"value": ""
+		},
+		{
+			"key": "updatedCheckinNegative",
+			"value": ""
+		},
+		{
+			"key": "updatedCheckoutNegative",
+			"value": ""
+		},
+		{
+			"key": "updatedAdditionalneedsNegative",
+			"value": ""
+		},
+		{
+			"key": "updatedFirstnamePositive",
+			"value": ""
+		},
+		{
+			"key": "updatedLastnamePositive",
+			"value": ""
+		},
+		{
+			"key": "updatedTotalpricePositive",
+			"value": ""
+		},
+		{
+			"key": "updatedDepositpaidPositive",
+			"value": ""
+		},
+		{
+			"key": "updatedCheckinPositive",
+			"value": ""
+		},
+		{
+			"key": "updatedCheckoutPositive",
+			"value": ""
+		},
+		{
+			"key": "updatedAdditionalneedsPositive",
+			"value": ""
+		}
+	]
+}
